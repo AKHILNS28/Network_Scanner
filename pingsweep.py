@@ -7,7 +7,7 @@ def pingsweep(ip):
         for h in hosts.hosts():
             response=ping(str(h),unit='ms',timeout=1)
             if response:
-                print(f"The IP {h} is reachable in {response} ms")
+                print(f"{h} is reachable ({response:.2f} ms)")
     except PermissionError:
-        print("ICMP needs root Permission")
+        print("ICMP requires root privileges or CAP_NET_RAW")
         
