@@ -1,26 +1,59 @@
 import sys
 import socket
-import pingsweep,tcpscanner
+import pingsweep, tcpscanner, service
 
-print('.....Welcome to Python Network Scanner.....')
-print("1.Ping Sweep")
-print("2.TCP Connect Scan")
+def banner():
+    print("=" * 50)
+    print("     Python Network Scanner")
+    print("     Ping • TCP Scan • Local Inspection")
+    print("=" * 50)
 
-try:
-    choice=int(input("Enter your choice:"))
-except ValueError:
-    print('Invalid Choice')
-    sys.exit()
+def menu():
+    print("\nChoose an option:")
+    print("  1) Ping Sweep")
+    print("  2) TCP Connect Scan")
+    print("  3) Local Socket Inspection")
+    print("  0) Exit")
 
-match choice:
-    case 1:
-        addr=input("Enter the network address:")
-        pingsweep.pingsweep(addr)
-    case 2:
+def main():
+    while True:
+        banner()
+        menu()
+
         try:
-            hostname=input("Enter hostname or ip address:")
-            tcpscanner.scanner(socket.gethostbyname(hostname))
-        except socket.gaierror:
-            print('Invalid hostname')
-    case _:
-        print('Invlid choice')
+            choice = int(input("\nEnter your choice: ").strip())
+        except ValueError:
+            print("\n[!] Invalid input. Please enter a number.")
+            continue
+
+        match choice:
+            case 1:
+                addr = input("\nEnter the network address (e.g. 192.168.1.0/24): ")
+                print("\n[+] Starting Ping Sweep...\n")
+                pingsweep.pingsweep(addr)
+
+            case 2:
+                hostname = input("\nEnter hostname or IP address: ")
+                try:
+                    target_ip = socket.gethostbyname(hostname)
+                    print(f"\n[+] Target resolved to {target_ip}")
+                    print("[+] Starting TCP Connect Scan...\n")
+                    tcpscanner.scanner(target_ip)
+                except socket.gaierror:
+                    print("\n[!] Invalid hostname or IP address")
+
+            case 3:
+                print("\n[+] Local Socket Inspection\n")
+                service.service()
+
+            case 0:
+                print("\nExiting scanner. Goodbye")
+                sys.exit()
+
+            case _:
+                print("\n[!] Invalid choice. Try again.")
+
+        input("\nPress Enter to continue...")
+
+if __name__ == "__main__":
+    main()
