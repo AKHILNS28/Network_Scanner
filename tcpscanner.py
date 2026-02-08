@@ -1,23 +1,34 @@
 import socket
 from concurrent.futures import ThreadPoolExecutor
 
-def scan(args):
-    ip,port=args
+TIMEOUT = 0.5
+MAX_THREADS = 50
+PORT_RANGE = range(1, 1025)
+
+def scan_port(ip: str, port: int):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(0.5)
+    sock.settimeout(TIMEOUT)
     try:
-        sock.connect((ip, port))
-        print(f"[+] {ip:<15} : {port:<5} OPEN")
-    except ConnectionRefusedError:
-        pass
+        result = sock.connect_ex((ip, port))
+        if result == 0:
+            print(f"[OPEN]     {ip:<15} : {port:<5}")
+        elif result == socket.errno.ECONNREFUSED:
+            pass
+        else:
+            print(f"[FILTERED] {ip:<15} : {port:<5}")
     except socket.timeout:
-        print(f"[+] {ip:<15} : {port:<5} FILTERED")
+        print(f"[FILTERED] {ip:<15} : {port:<5}")
     except OSError:
         pass
     finally:
         sock.close()
 
-def scanner(ip):
-    with ThreadPoolExecutor(max_workers=50) as pool:
-        tasks=[(ip,port) for port in range(1,1025)]
-        pool.map(scan,tasks)
+def scanner(ip: str):
+    print(f"\n[+] Starting TCP Connect Scan on {ip}")
+    print("-" * 40)
+
+    with ThreadPoolExecutor(max_workers=MAX_THREADS) as executor:
+        for port in PORT_RANGE:
+            executor.submit(scan_port, ip, port)
+
+    print("\n[+] Scan completed\n")
